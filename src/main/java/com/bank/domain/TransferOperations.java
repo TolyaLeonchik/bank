@@ -7,5 +7,5 @@ public class TransferOperations {
 
     private String numberCardFrom;
     private String numberCardTo;
-    private Integer summa;
+    private int summa;
 }

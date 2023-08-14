@@ -5,7 +5,6 @@ import com.bank.domain.TransferOperations;
 import com.bank.domain.Users;
 import com.bank.service.BankService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -115,29 +114,6 @@ public class UserController {
         }
     }
 
-    @Tag(name = "Transfer money", description = "This is first method to transfer the money")
-    @PutMapping("/transfer/{idFirst}/{idSecond}/{sum}")
-    public ResponseEntity<Users> transferMoney(@PathVariable @Parameter(description = "Id пользователя," +
-            " который переводит деньги") Integer idFirst, @PathVariable @Parameter(description = "Id пользователя," +
-            " который получит деньги") Integer idSecond, @PathVariable @Parameter(description = "Переводимая сумма")
-                                               Integer sum) {
-
-        Users userWhoTransfers = bankService.getUser(idFirst);
-        Users userWillGetMoney = bankService.getUser(idSecond);
-
-        boolean flag = false;
-        if (sum <= userWhoTransfers.getBalance() && userWhoTransfers != null && userWillGetMoney != null) {
-            flag = true;
-        }
-
-        if (flag) {
-            bankService.transferMoney(userWhoTransfers, userWillGetMoney, sum);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
-    }
-
     @Tag(name = "Transfer money", description = "This is second method to transfer the money")
     @PutMapping("/trans")
     public ResponseEntity<HttpStatus> transUser(@RequestBody TransferOperations trans) {
@@ -145,13 +121,10 @@ public class UserController {
         Users userFrom = bankService.findUser(trans.getNumberCardFrom());
         Users userTo = bankService.findUser(trans.getNumberCardTo());
 
-        boolean flag = false;
-        if (trans.getSumma() <= userFrom.getBalance() && userFrom != null && userTo != null) {
-            flag = true;
-        }
+        boolean flag = trans.getSumma() <= userFrom.getBalance() && userTo != null;
 
         if (flag) {
-            bankService.transferMoneyTwo(userFrom, userTo, trans);
+            bankService.transferMoney(userFrom, userTo, trans);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             return new ResponseEntity<>(HttpStatus.CONFLICT);

@@ -1,75 +1,60 @@
 package com.bank.repository;
 
-import com.bank.domain.TypeOfCard;
 import com.bank.domain.Users;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Repository
 public class BankRepository {
 
-    private final Map<Integer, Users> users = new HashMap<>();
+    public final EntityManager entityManager;
 
-    {
-        Users users1 = new Users();
-        users1.setId(1);
-        users1.setFirstName("Petya");
-        users1.setLastName("Konovalov");
-        users1.setLogin("PetKon");
-        users1.setPassword("1506denRojdenia");
-        users1.setTypeOfCard(TypeOfCard.MASTERCARD);
-        users1.setNumberCard("4555455566667878");
-        users1.setExpirationMonth(15);
-        users1.setExpirationYear(25);
-        users1.setBalance(4210);
-
-        Users users2 = new Users();
-        users2.setId(2);
-        users2.setFirstName("Anton");
-        users2.setLastName("Shapovalov");
-        users2.setLogin("shapka");
-        users2.setPassword("12345687");
-        users2.setTypeOfCard(TypeOfCard.VISA);
-        users2.setNumberCard("7412369852876874");
-        users2.setExpirationMonth(15);
-        users2.setExpirationYear(25);
-        users2.setBalance(3145);
-
-        users.put(1, users1);
-        users.put(2, users2);
+    public BankRepository(EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
     public List<Users> getAllUsers() {
-        return users.values().stream().toList();
+        Query query = entityManager.createQuery("FROM bank_users");
+        return query.getResultList();
     }
 
-    public Users getUser(Integer id) {
-        return users.get(id);
+    public Users getUser(int id) {
+        return entityManager.find(Users.class, id);
     }
 
     public void save(Users user) {
-        users.put(user.getId(), user);
+        entityManager.getTransaction().begin();
+        entityManager.persist(user);
+        entityManager.getTransaction().commit();
+    }
+
+    public void update(Users user) {
+        entityManager.getTransaction().begin();
+        entityManager.merge(user);
+        entityManager.getTransaction().commit();
     }
 
     public void delete(Integer id) {
-        users.remove(id);
+        entityManager.getTransaction().begin();
+        entityManager.remove(entityManager.find(Users.class, id));
+        entityManager.getTransaction().commit();
     }
 
     public void transfer(Users moneyFrom, Users moneyTo) {
-        users.put(moneyFrom.getId(), moneyFrom);
-        users.put(moneyTo.getId(), moneyTo);
+        entityManager.getTransaction().begin();
+        entityManager.merge(moneyFrom);
+        entityManager.merge(moneyTo);
+        entityManager.getTransaction().commit();
     }
 
     public Users findUserCard(String searchNumberCard) {
-        Users search = null;
-        for (Users user : users.values()) {
-            if (user.getNumberCard().equals(searchNumberCard)) {
-                search = user;
-            }
-        }
-        return search;
+        TypedQuery<Users> query = entityManager.createQuery("select u from bank_users u where u.numberCard = :search", Users.class);
+        query.setParameter("search", searchNumberCard);
+        List<Users> result = query.getResultList();
+        return result.isEmpty() ? null : result.get(0);
     }
 }

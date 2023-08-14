@@ -10,7 +10,6 @@ import java.util.List;
 
 @Service
 public class BankService {
-    private Integer countOfAccounts = 2;
 
     private final BankRepository bankRepository;
 
@@ -27,32 +26,16 @@ public class BankService {
     }
 
     public Users createUser(Users user) {
-        user.setId(++countOfAccounts);
         bankRepository.save(user);
         return user;
     }
 
     public void updateUser(Users user) {
-        Users userRedactor = getUser(user.getId());
-        userRedactor.setFirstName(user.getFirstName());
-        userRedactor.setLastName(userRedactor.getLastName());
-        userRedactor.setLogin(user.getLogin());
-        userRedactor.setPassword(user.getPassword());
-        bankRepository.save(userRedactor);
+        bankRepository.update(user);
     }
 
     public void deleteUser(Integer id) {
         bankRepository.delete(id);
-    }
-
-    public void transferMoney(Users userWhoTransfers, Users userWillGetMoney, Integer sum) {
-        Users moneyFrom = getUser(userWhoTransfers.getId());
-        Users moneyTo = getUser(userWillGetMoney.getId());
-
-        moneyFrom.setBalance(userWhoTransfers.getBalance() - sum);
-        moneyTo.setBalance(userWillGetMoney.getBalance() + sum);
-
-        bankRepository.transfer(moneyFrom, moneyTo);
     }
 
     public CardInfo getCardInfo(Integer id) {
@@ -61,8 +44,6 @@ public class BankService {
         cardInfo.setFirstName(user.getFirstName().toUpperCase());
         cardInfo.setLastName(user.getLastName().toUpperCase());
         cardInfo.setNumberCard(user.getNumberCard());
-        cardInfo.setExpirationMonth(user.getExpirationMonth());
-        cardInfo.setExpirationYear(user.getExpirationYear());
         return cardInfo;
     }
 
@@ -70,7 +51,7 @@ public class BankService {
         return bankRepository.findUserCard(numberCard);
     }
 
-    public void transferMoneyTwo(Users userFrom, Users userTo, TransferOperations trans) {
+    public void transferMoney(Users userFrom, Users userTo, TransferOperations trans) {
         Users moneyFrom = getUser(userFrom.getId());
         Users moneyTo = getUser(userTo.getId());
 
