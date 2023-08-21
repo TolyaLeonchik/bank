@@ -105,7 +105,7 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteUser(@PathVariable Integer id) {
         Users user = bankService.getUser(id);
-        bankService.deleteUser(id);
+        bankService.deleteUser(user);
         Users userResult = bankService.getUser(id);
         if (userResult == null && user != null) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);

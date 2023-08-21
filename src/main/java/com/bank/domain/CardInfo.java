@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class CardInfo {
+
     private String firstName;
     private String lastName;
     @Digits(integer = 16, fraction = 0)

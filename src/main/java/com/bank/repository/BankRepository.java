@@ -1,9 +1,9 @@
 package com.bank.repository;
 
 import com.bank.domain.Users;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,48 +11,65 @@ import java.util.List;
 @Repository
 public class BankRepository {
 
-    public final EntityManager entityManager;
+    public final SessionFactory sessionFactory;
 
-    public BankRepository(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    public BankRepository(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
     public List<Users> getAllUsers() {
-        Query query = entityManager.createQuery("FROM bank_users");
-        return query.getResultList();
+        Session session = sessionFactory.openSession();
+        Query<Users> query = session.createQuery("FROM bank_users", Users.class);
+        List<Users> result = query.getResultList();
+        session.close();
+        return result;
     }
 
     public Users getUser(int id) {
-        return entityManager.find(Users.class, id);
+        Session session = sessionFactory.openSession();
+        Users user = session.find(Users.class, id);
+        session.close();
+        return user;
     }
 
     public void save(Users user) {
-        entityManager.getTransaction().begin();
-        entityManager.persist(user);
-        entityManager.getTransaction().commit();
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        session.persist(user);
+        session.getTransaction().commit();
+        session.close();
     }
 
     public void update(Users user) {
-        entityManager.getTransaction().begin();
-        entityManager.merge(user);
-        entityManager.getTransaction().commit();
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        session.merge(user);
+        session.getTransaction().commit();
+        session.close();
     }
 
-    public void delete(Integer id) {
-        entityManager.getTransaction().begin();
-        entityManager.remove(entityManager.find(Users.class, id));
-        entityManager.getTransaction().commit();
+    public void delete(Users user) {
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        session.remove(user);
+        session.getTransaction().commit();
+        session.close();
     }
 
     public void transfer(Users moneyFrom, Users moneyTo) {
-        entityManager.getTransaction().begin();
-        entityManager.merge(moneyFrom);
-        entityManager.merge(moneyTo);
-        entityManager.getTransaction().commit();
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        session.merge(moneyFrom);
+        session.merge(moneyTo);
+        session.getTransaction().commit();
+        session.close();
     }
 
     public Users findUserCard(String searchNumberCard) {
-        TypedQuery<Users> query = entityManager.createQuery("select u from bank_users u where u.numberCard = :search", Users.class);
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        Query<Users> query = session.createQuery("SELECT u FROM bank_users u " +
+                "WHERE u.numberCard = : search", Users.class);
         query.setParameter("search", searchNumberCard);
         List<Users> result = query.getResultList();
         return result.isEmpty() ? null : result.get(0);

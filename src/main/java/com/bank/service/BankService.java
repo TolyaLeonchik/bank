@@ -34,8 +34,8 @@ public class BankService {
         bankRepository.update(user);
     }
 
-    public void deleteUser(Integer id) {
-        bankRepository.delete(id);
+    public void deleteUser(Users user) {
+        bankRepository.delete(user);
     }
 
     public CardInfo getCardInfo(Integer id) {
